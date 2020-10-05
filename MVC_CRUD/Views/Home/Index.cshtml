@@ -1,0 +1,87 @@
+﻿@model IEnumerable<MVC_CRUD.Models.tblCity>
+
+@{
+    ViewBag.Title = "Home";
+}
+
+<h2>Cities</h2>
+
+<div class="addEditDiv">
+    @{Html.RenderAction("AddUpdateCity", "Home",new { @id = 0 });}
+</div>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.CityId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CityName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CountryId)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+<tr>
+    <td class="id">@item.CityId</td>
+    <td>
+        @Html.DisplayFor(modelItem => item.CityName, new { AllowHtmlAttribute = new { @class = "name" } })
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.CountryId)
+    </td>
+    <td>
+        <button class="edit">Edit</button> | @*<button class="delete">Delete</button>*@
+        @Html.ActionLink("Delete", "DeleteCity", new { id = item.CityId })
+    </td>
+</tr>
+}
+
+</table>
+<div class="deleteDiv">
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+<script>
+    
+    //Task2
+    function getAllData() {
+        var id = $(".id").text();
+        return id;
+    }
+    $(document).on('click', '.edit', function () {
+        var id = $(this).closest("tr").find('.id').text();
+        LoadDiv(id);
+    })
+    function LoadDiv(id) {
+        $.ajax({
+            type: "GET",
+            url: "/home/AddUpdateCity/"+id,
+            //contentType: 'application/html; charset=utf-8', type: 'GET', dataType: 'html',
+            success: function (response) {
+                $('.addEditDiv').html(response);
+            }
+        })
+    }
+
+    $(document).on('click', '.delete', function () {
+        var id = $(this).closest("tr").find('.id').text();
+        LoadDivDel(id);
+    })
+    function LoadDivDel(id) {
+        $.ajax({
+            type: "DELETE",
+            url: "/home/DeleteCity/" + id,
+            //contentType: 'application/html; charset=utf-8', type: 'GET', dataType: 'html',
+            success: function (data) {
+                if (data.msg) {
+                    $('.deleteDiv').html(msg);
+                    alert(msg);
+                }
+                
+            }
+        })
+    }
+
+</script>
