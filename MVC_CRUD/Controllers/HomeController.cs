@@ -20,8 +20,16 @@ namespace MVC_CRUD.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            var results = (from row in db.tblCities select row).ToList();
-            return View(results);
+            List<clsCity> listcity = new List<clsCity>();
+            listcity = ( from c in db.tblCities
+                         join cc in db.tblCountries on c.CountryId equals cc.CountryId
+                         select new clsCity{
+                         CityId = c.CityId,
+                         CityName = c.CityName,
+                         CountryId = c.CountryId,
+                         CountryName = cc.CountryName
+                         }).ToList();
+            return View(listcity);
         }
         [HttpGet]
         public ActionResult AddUpdateCity(int id=0)
@@ -53,43 +61,62 @@ namespace MVC_CRUD.Controllers
             return PartialView(city);
         }
         [HttpPost]
-        public ActionResult AddUpdateCity(clsCity a, int id=0)
+        public ActionResult AddUpdateCity(clsCity ccity)
         {
+            string message = "";
+            bool status = false;
             clsCity city = new clsCity();
-            if (a.CityId> 0)
+            try
             {
-                var res = db.tblCities.Where(x => x.CityId == a.CityId).FirstOrDefault();
-                res.CityName = a.CityName;
-                res.CountryId = a.CountryId;
-                db.SaveChanges();
+                if (ccity.CityId > 0)
+                {
+                    var res = db.tblCities.Where(x => x.CityId == ccity.CityId).FirstOrDefault();
+                    res.CityName = ccity.CityName;
+                    res.CountryId = ccity.CountryId;
+                    db.SaveChanges();
+                }
+                else
+                {
+
+                    tblCity cityy = new tblCity();
+                    cityy.CityName = ccity.CityName;
+                    cityy.CountryId = ccity.CountryId;
+                    db.tblCities.Add(cityy);
+                    db.SaveChanges();
+                }
+                status = true;
+
             }
-            else
+            catch (Exception ex)
             {
-                tblCity cityy  = new tblCity();
-                cityy.CityName = a.CityName;
-                cityy.CountryId = a.CountryId;
-                db.tblCities.Add(cityy);
+                message = ex.Message.ToString();
             }
 
-            ViewBag.Countries = new SelectList(db.tblCountries.OrderBy(x => x.CountryName).ToList(), "CountryId", "CountryName", city.CountryId);
-
-            
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            return new JsonResult { Data = new { status = status, message = message } };
         }
         
-        public ActionResult DeleteCity(int? id)
-        {
-            var result = db.tblCities.Single(city => city.CityId == id);
-            return PartialView(result);
-        }
-        [HttpDelete]
+        //public ActionResult DeleteCity(int? id)
+        //{
+        //    var result = db.tblCities.Single(city => city.CityId == id);
+        //    return PartialView(result);
+        //}
+        [HttpPost]
         public ActionResult DeleteCity(int id)
         {
-            var result = db.tblCities.Single(city => city.CityId == id);
-            db.tblCities.Remove(result);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            string message = "";
+            bool status = false;
+            try
+            {
+                var result = db.tblCities.Single(city => city.CityId == id);
+                db.tblCities.Remove(result);
+                db.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                message = ex.Message.ToString();
+            }
+
+            return new JsonResult { Data = new { status = status, message = message } };
         }
 
     }

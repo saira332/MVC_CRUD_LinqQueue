@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MVC_CRUD.Models.tblCity>
+﻿@model IEnumerable<MVC_CRUD.Models.clsCity>
 
 @{
     ViewBag.Title = "Home";
@@ -20,7 +20,9 @@
         <th>
             @Html.DisplayNameFor(model => model.CountryId)
         </th>
-        <th></th>
+        <th>
+            @Html.DisplayNameFor(model => model.CountryName)
+        </th>
     </tr>
 
 @foreach (var item in Model) {
@@ -33,8 +35,11 @@
         @Html.DisplayFor(modelItem => item.CountryId)
     </td>
     <td>
+        @Html.DisplayFor(modelItem => item.CountryName)
+    </td>
+    <td>
         <button class="edit">Edit</button> | @*<button class="delete">Delete</button>*@
-        @Html.ActionLink("Delete", "DeleteCity", new { id = item.CityId })
+        <button class="deleteBtn">Delete</button>
     </td>
 </tr>
 }
@@ -64,24 +69,45 @@
             }
         })
     }
-
-    $(document).on('click', '.delete', function () {
+    //Delete
+    $(document).on('click', '.deleteBtn', function () {
         var id = $(this).closest("tr").find('.id').text();
-        LoadDivDel(id);
+        Delete(id);
     })
-    function LoadDivDel(id) {
-        $.ajax({
-            type: "DELETE",
-            url: "/home/DeleteCity/" + id,
-            //contentType: 'application/html; charset=utf-8', type: 'GET', dataType: 'html',
-            success: function (data) {
-                if (data.msg) {
-                    $('.deleteDiv').html(msg);
-                    alert(msg);
+    function Delete(id) {
+        var checkstr = confirm('Are you sure you want to delete');
+        if (checkstr == true) {
+            $.ajax({
+                url: "/home/DeleteCity/" + id,
+                type: "POST",
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status) {
+                        location.reload();
+                    }
+                    else {
+                        alert(response.message);
+                    }
                 }
-                
-            }
-        })
+            })
+        }
+        else {
+            return false;
+        }
     }
+    //function LoadDivDel(id) {
+    //    $.ajax({
+    //        type: "DELETE",
+    //        url: "/home/DeleteCity/" + id,
+    //        //contentType: 'application/html; charset=utf-8', type: 'GET', dataType: 'html',
+    //        success: function (data) {
+    //            if (data.msg) {
+    //                $('.deleteDiv').html(msg);
+    //                alert(msg);
+    //            }
+                
+    //        }
+    //    })
+    //}
 
 </script>
