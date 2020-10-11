@@ -1,5 +1,8 @@
-﻿using System;
+﻿using MVC_CRUD.Models;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -15,7 +18,7 @@ namespace MVC_CRUD.Controllers
         }
 
         [HttpPost]
-        public ActionResult InsertUpdateLocationType(clsUser user)
+        public ActionResult InsertUpdateCity(clsCity city)
         {
             string message = "";
             bool status = false;
@@ -23,8 +26,7 @@ namespace MVC_CRUD.Controllers
             {
                 string returnId = "0";
                 string insertUpdateStatus = "";
-                int? LocationTypeId = user.LocationTypeId;
-                if (user.LocationTypeId > 0)
+                if (city.CityId > 0)
                 {
                     insertUpdateStatus = "Update";
 
@@ -34,10 +36,9 @@ namespace MVC_CRUD.Controllers
                     insertUpdateStatus = "Save";
 
                 }
-                returnId = InsertUpdateLocationTypeDb(user, insertUpdateStatus);
+                returnId = InsertUpdateLocationTypeDb(city, insertUpdateStatus);
                 if (returnId == "Success")
                 {
-                    ModelState.Clear();
                     status = true;
                     message = "User Type Successfully Updated";
                 }
@@ -56,7 +57,7 @@ namespace MVC_CRUD.Controllers
 
             return new JsonResult { Data = new { status = status, message = message } };
         }
-        private string InsertUpdateLocationTypeDb(clsUser st, string insertUpdateStatus)
+        private string InsertUpdateLocationTypeDb(clsCity st, string insertUpdateStatus)
         {
             string returnId = "0";
             string connection = System.Configuration.ConfigurationManager.ConnectionStrings["ADO"].ConnectionString;
@@ -65,13 +66,13 @@ namespace MVC_CRUD.Controllers
                 try
                 {
                     con.Open();
-                    using (SqlCommand cmd = new SqlCommand("spInsertUpdateLocationType", con))
+                    using (SqlCommand cmd = new SqlCommand("spInsertUpdateCity", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Clear();
-                        cmd.Parameters.Add("@LocationTypeId", SqlDbType.Int).Value = st.LocationTypeId;
-                        cmd.Parameters.Add("@TypeName", SqlDbType.NVarChar).Value = st.TypeName;
-                        cmd.Parameters.Add("@ActionByUserId", SqlDbType.Int).Value = User.UserId;
+                        cmd.Parameters.Add("@CityId", SqlDbType.Int).Value = st.CityId;
+                        cmd.Parameters.Add("@CityName", SqlDbType.NVarChar).Value = st.CityName;
+                        cmd.Parameters.Add("@ContryId", SqlDbType.Int).Value = st.CountryId;
                         cmd.Parameters.Add("@InsertUpdateStatus", SqlDbType.NVarChar).Value = insertUpdateStatus;
                         cmd.Parameters.Add("@CheckReturn", SqlDbType.NVarChar, 300).Direction = ParameterDirection.Output;
                         cmd.ExecuteNonQuery();

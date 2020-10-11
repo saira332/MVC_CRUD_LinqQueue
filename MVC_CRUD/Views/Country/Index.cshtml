@@ -1,23 +1,17 @@
-﻿@model IEnumerable<MVC_CRUD.Models.clsCity>
+﻿@model IEnumerable<MVC_CRUD.Models.tblCountry>
 
 @{
     ViewBag.Title = "Home";
 }
 
-<h2>Cities</h2>
+<h2>Countries</h2>
 
 <div class="addEditDiv">
-    @{Html.RenderAction("AddUpdateCity", "Home", new { @id = 0 });}
+    @{Html.RenderAction("AddUpdateCountry", "Country", new { @id = 0 });}
 </div>
 <table class="table" id="myTable">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CityId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CityName)
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.CountryId)
             </th>
@@ -25,7 +19,7 @@
                 @Html.DisplayNameFor(model => model.CountryName)
             </th>
             <th>
-                Actions
+                Action
             </th>
         </tr>
     </thead>
@@ -34,28 +28,29 @@
         {
 
             <tr>
-                <td class="id">@item.CityId</td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CityName, new { AllowHtmlAttribute = new { @class = "name" } })
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CountryId)
-                </td>
+                <td class="id">@item.CountryId</td>
                 <td>
                     @Html.DisplayFor(modelItem => item.CountryName)
                 </td>
                 <td>
-                    <button class="edit">Edit</button> | @*<button class="delete">Delete</button>*@
+                    <button class="edit">Edit</button> |
                     <button class="deleteBtn">Delete</button>
                 </td>
             </tr>
-        
-    }
-        </tbody>
 
-    </table>
+        }
+    </tbody>
+</table>
 <div class="deleteDiv">
 </div>
+@*<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>*@
+
+
+
+
 
 
 
@@ -63,11 +58,6 @@
     $(document).ready(function () {
         $('#myTable').DataTable();
     })
-
-
-
-
-
     //Task2
     function getAllData() {
         var id = $(".id").text();
@@ -80,7 +70,7 @@
     function LoadDiv(id) {
         $.ajax({
             type: "GET",
-            url: "/home/AddUpdateCity/" + id,
+            url: "/Country/AddUpdateCountry/" + id,
             success: function (response) {
                 $('.addEditDiv').html(response);
             }
@@ -88,7 +78,6 @@
     }
     //Delete
     $(document).on('click', '.deleteBtn', function () {
-       
         var id = $(this).closest("tr").find('.id').text();
         Delete(id);
     })
@@ -96,7 +85,7 @@
         var checkstr = confirm('Are you sure you want to delete');
         if (checkstr == true) {
             $.ajax({
-                url: "/home/DeleteCity/" + id,
+                url: "/Country/DeleteCountry/" + id,
                 type: "POST",
                 dataType: 'json',
                 success: function (response) {
@@ -113,6 +102,5 @@
             return false;
         }
     }
-    
 
 </script>
