@@ -177,7 +177,7 @@
             dataType: 'json',
             success: function (response) {
                 if (response.status) {
-                    location.reload();
+                    oTable.ajax.reload(null, false);
                 }
                 else {
                     alert(response.message);

@@ -12,8 +12,45 @@ namespace MVC_CRUD.Controllers
         TestDbEntities db = new TestDbEntities();
 
         IQueryable<clsList> AllItemsList;
+        #region get cities list
+        public JsonResult GetCityList(string searchTerm, int pageSize, int pageNumber)
+        {
+            AllItemsList = AllCityLists();
+            var select2pagedResult = new Select2PagedResult();
+            var totalResults = 0;
+            select2pagedResult.Results = GetPagedListOptions(searchTerm, pageSize, pageNumber, out totalResults);
+            select2pagedResult.Total = totalResults;
 
+            var result = select2pagedResult;
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
 
+        public IQueryable<clsList> AllCityLists()
+        {
+            //string cacheKey = "Select2Options";
+            ////check cache 
+            //if (System.Web.HttpContext.Current.Cache[cacheKey] != null)
+            //{
+            //    return (IQueryable<clsList>)System.Web.HttpContext.Current.Cache[cacheKey];
+            //}
+
+            List<clsList> item = new List<clsList>();
+            item = (from c in db.tblCities
+                    orderby c.CityName
+                    select new clsList
+                    {
+                        id = c.CityId,
+                        text = c.CityName
+                    }).ToList();
+
+            var result = item.AsQueryable();
+
+            //cache results
+            //System.Web.HttpContext.Current.Cache[cacheKey] = result;
+
+            return result;
+        }
+        #endregion
         #region get countries list
 
         public JsonResult GetCountryList(string searchTerm, int pageSize, int pageNumber)

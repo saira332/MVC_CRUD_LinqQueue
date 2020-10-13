@@ -12,10 +12,11 @@ namespace MVC_CRUD.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class tblCity
+    public partial class tblCompany
     {
-        public int CityId { get; set; }
-        public string CityName { get; set; }
+        public string CompanyName { get; set; }
         public int CountryId { get; set; }
+        public int CityId { get; set; }
+        public int CompanyId { get; set; }
     }
 }

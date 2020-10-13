@@ -27,5 +27,6 @@ namespace MVC_CRUD.Models
     
         public virtual DbSet<tblCity> tblCities { get; set; }
         public virtual DbSet<tblCountry> tblCountries { get; set; }
+        public virtual DbSet<tblCompany> tblCompanies { get; set; }
     }
 }

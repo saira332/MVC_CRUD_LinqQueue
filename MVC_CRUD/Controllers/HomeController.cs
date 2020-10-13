@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Web;
 using System.Web.Mvc;
+using System.Linq.Dynamic;
 
 namespace MVC_CRUD.Controllers
 {
@@ -22,16 +23,70 @@ namespace MVC_CRUD.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            List<clsCity> listcity = new List<clsCity>();
-            listcity = (from c in db.tblCities
-                        join cc in db.tblCountries on c.CountryId equals cc.CountryId
-                        select new clsCity {
-                            CityId = c.CityId,
-                            CityName = c.CityName,
-                            CountryId = c.CountryId,
-                            CountryName = db.tblCountries.Where(x => x.CountryId == c.CountryId).Select(x => x.CountryName).FirstOrDefault()
-                        }).ToList();
-            return View(listcity);
+            return View();
+        }
+        public ActionResult GetAllCities()
+        {
+            //if (User != null)
+            //{
+
+
+            var draw = Request.Form.GetValues("draw").FirstOrDefault();
+            var start = Request.Form.GetValues("start").FirstOrDefault();
+            var length = Request.Form.GetValues("length").FirstOrDefault();
+            var sortColumn = Request.Form.GetValues("columns[" + Request.Form.GetValues("order[0][column]").FirstOrDefault()
+                                    + "][name]").FirstOrDefault();
+            var sortColumnDir = Request.Form.GetValues("order[0][dir]").FirstOrDefault();
+            //var HallName = Request.Form.GetValues("columns[0][search][value]").FirstOrDefault();
+            int pageSize = length != null ? Convert.ToInt32(length) : 0;
+            int skip = start != null ? Convert.ToInt32(start) : 0;
+            int recordsTotal = 0;
+            //string whereCondition = "";
+            string sorting = "";
+            if (!(string.IsNullOrEmpty(sortColumn) && !(string.IsNullOrEmpty(sortColumnDir))))
+            {
+                if (!string.IsNullOrEmpty(sortColumn))
+                {
+                    sorting = " Order by " + sortColumn + " " + sortColumnDir + "";
+                }
+            }
+            else
+            {
+                sorting = " Order by s.CountryId asc";
+            }
+            //if (!(string.IsNullOrEmpty(HallName)))
+            //{
+            //    whereCondition = " LOWER(s.HallName) like ('%" + HallName + "%')";
+            //}
+            //else
+            //{
+            //    whereCondition = " LOWER(s.HallName) like ('%%')";
+            //}
+            List<clsCity> listsub = new List<clsCity>();
+            DataTableReader dtr = clsSqlCity.getCityListCount();
+            while (dtr.Read())
+            {
+                recordsTotal = Convert.ToInt32(dtr["MyRowCount"]);
+            }
+            DataTableReader dt = clsSqlCity.getCityList(start, length, sorting);
+            //     int i = 0;
+            while (dt.Read())
+            {
+                listsub.Add(new clsCity()
+                {
+                    CityId = Convert.ToInt32(dt["CityId"]),
+                    CityName = dt["CityName"].ToString(),
+                    CountryId = Convert.ToInt32(dt["CountryId"]),
+                    CountryName = dt["CountryName"].ToString()
+
+                });
+            }
+
+            var data = listsub.ToList();
+
+
+            return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data },
+                JsonRequestBehavior.AllowGet);
         }
         [HttpGet]
         public ActionResult AddUpdateCity(int id=0)
@@ -101,36 +156,7 @@ namespace MVC_CRUD.Controllers
             }
 
             return new JsonResult { Data = new { status = status, message = message } };
-            //string message = "";
-            //bool status = false;
-            //clsCity city = new clsCity();
-            //try
-            //{
-            //    if (ccity.CityId > 0)
-            //    {
-            //        var res = db.tblCities.Where(x => x.CityId == ccity.CityId).FirstOrDefault();
-            //        res.CityName = ccity.CityName;
-            //        res.CountryId = ccity.CountryId;
-            //        db.SaveChanges();
-            //    }
-            //    else
-            //    {
-
-            //        tblCity cityy = new tblCity();
-            //        cityy.CityName = ccity.CityName;
-            //        cityy.CountryId = ccity.CountryId;
-            //        db.tblCities.Add(cityy);
-            //        db.SaveChanges();
-            //    }
-            //    status = true;
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    message = ex.Message.ToString();
-            //}
-
-            //return new JsonResult { Data = new { status = status, message = message } };
+            
         }
 
         private string InsertUpdateCityDb(clsCity st, string insertUpdateStatus)

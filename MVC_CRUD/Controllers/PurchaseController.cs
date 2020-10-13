@@ -10,10 +10,10 @@ using System.Linq.Dynamic;
 
 namespace MVC_CRUD.Controllers
 {
-    public class CountryController : Controller
+    public class PurchaseController : Controller
     {
         TestDbEntities db;
-        public CountryController()
+        public PurchaseController()
         {
             db = new TestDbEntities();
         }
@@ -76,9 +76,9 @@ namespace MVC_CRUD.Controllers
 
                 });
             }
-          
+
             var data = listsub.ToList();
-        
+
 
             return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data },
                 JsonRequestBehavior.AllowGet);
@@ -91,12 +91,12 @@ namespace MVC_CRUD.Controllers
             if (id > 0)
             {
                 country = (from c in db.tblCountries
-                        where c.CountryId == id
-                        select new clsCountry
-                        {
-                            CountryId = c.CountryId,
-                            CountryName = c.CountryName
-                        }).FirstOrDefault();
+                           where c.CountryId == id
+                           select new clsCountry
+                           {
+                               CountryId = c.CountryId,
+                               CountryName = c.CountryName
+                           }).FirstOrDefault();
 
             }
             else
@@ -106,7 +106,7 @@ namespace MVC_CRUD.Controllers
                     CountryId = 0,
                     CountryName = ""
                 };
-            }      
+            }
 
             return PartialView(country);
         }

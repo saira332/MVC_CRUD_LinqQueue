@@ -1,0 +1,259 @@
+﻿
+@model MVC_CRUD.Models.clsCompany
+
+
+
+<style>
+    .table tr td {
+        border: 0 !important;
+    }
+
+    .custome-class-form h4 {
+        font-weight: bold;
+        color: #000;
+    }
+
+    .custome-class-form label {
+        font-weight: bold !important;
+        color: #000;
+    }
+
+    .table tr .V__align {
+        vertical-align: bottom !important;
+    }
+
+    .width {
+        width: 195px;
+    }
+
+    .select2-container {
+        width: 221px !important;
+    }
+</style>
+
+
+<div class="form-horizontal">
+    <h4>tblCountry</h4>
+    <hr />
+    <input type="hidden" id="HiddenCountryId" name="HiddenCountryId" value="@Model.CityId" />
+    <input type="hidden" id="HiddenCountryName" name="HiddenCountryName" value="@Model.CityName" />
+    <input type="hidden" id="HiddenCountryId" name="HiddenCountryId" value="@Model.CountryId" />
+    <input type="hidden" id="HiddenCountryName" name="HiddenCountryName" value="@Model.CountryName" />
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.CompanyId, new { })
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.CompanyName, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.CompanyName, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.CompanyName, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+
+
+
+    <table class="" style="width: 100% !important">
+        <tr>
+            <td style="width: 100% !important;">
+                <label>Select City</label>
+                <label class="select">
+                    @Html.DropDownListFor(model => model.CityId, Enumerable.Empty<SelectListItem>(), new { @style = "width: 221px !important" })
+                </label>
+            </td>
+            @*<td style="width: 2%;margin-left: -5px;padding-top:8.7px;">
+                    <a href="/home/Index" target="_blank" class="btn btn-primary" style="margin-top: 13px; color: #fff; padding: 4.1px; margin-left: -4px; margin-right: 40px; height: 29px; width: 35px; background-color: #aaaaaa !important; border-color: #aaaaaa !important;" title="Add New Country">
+                        <i class="glyphicon glyphicon-plus" style="margin-left:2px"></i>
+                    </a>
+                </td>*@
+        </tr>
+    </table>
+    <table class="" style="width: 100% !important">
+        <tr>
+            <td style="width: 100% !important;">
+                <label>Select Country</label>
+                <label class="select">
+                    @Html.DropDownListFor(model => model.CountryId, Enumerable.Empty<SelectListItem>(), new { @style = "width: 221px !important" })
+                </label>
+            </td>
+            @*<td style="width: 2%;margin-left: -5px;padding-top:8.7px;">
+                    <a href="/home/Index" target="_blank" class="btn btn-primary" style="margin-top: 13px; color: #fff; padding: 4.1px; margin-left: -4px; margin-right: 40px; height: 29px; width: 35px; background-color: #aaaaaa !important; border-color: #aaaaaa !important;" title="Add New Country">
+                        <i class="glyphicon glyphicon-plus" style="margin-left:2px"></i>
+                    </a>
+                </td>*@
+        </tr>
+    </table>
+
+
+
+
+
+    @*<div class="form-group">
+            @Html.LabelFor(model => model.CountryId, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+
+                @Html.DropDownListFor(model => model.CountryId, ViewBag.Countries as SelectList, new { })
+                @Html.ValidationMessageFor(model => model.CountryId, "", new { @class = "text-danger" })
+            </div>
+        </div>*@
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Save" class="btn btn-default add" />
+        </div>
+    </div>
+</div>
+@* } *@
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+@*<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>*@
+@*<script src="~/Scripts/bootstrap.js"></script>*@
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var pageSize = 10;
+        var optionListUrl = '@Url.Action("GetCountryList", "ComboList")';
+        var optionCountryListUrl = '@Url.Action("GetCityList", "ComboList")';
+
+        //City List
+        $('#CityId').select2({
+            ajax: {
+                delay: 150,
+                url: optionCountryListUrl,
+                dataType: 'json',
+
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        searchTerm: params.term,
+                        pageSize: pageSize,
+                        pageNumber: params.page
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: data.Results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.Total
+                        }
+                    };
+                }
+            },
+            //placeholder: "-- Select City--",
+            minimumInputLength: 0,
+            allowClear: true,
+            //dropdownParent: $(".mySelect")
+        });
+
+
+
+        //Country List
+        $('#CountryId').select2({
+            ajax: {
+                delay: 150,
+                url: optionListUrl,
+                dataType: 'json',
+
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        searchTerm: params.term,
+                        pageSize: pageSize,
+                        pageNumber: params.page
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: data.Results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.Total
+                        }
+                    };
+                }
+            },
+            //placeholder: "-- Select City--",
+            minimumInputLength: 0,
+            allowClear: true,
+            //dropdownParent: $(".mySelect")
+        });
+
+
+
+
+       // $('#CountryId').select2();
+        if ($('#CompanyId').val() > 0) {
+            /////////------Address--------------/////////
+            if ($('#CountryId').find("option[value='" + $('#HiddenCountryId').val() + "']").length) {
+                $('#CountryId').val($('#HiddenCountryId').val()).trigger('change');
+            } else {
+                // Create a DOM Option and pre-select by default
+                var newOption = new Option($('#HiddenCountryName').val(), $('#HiddenCountryId').val(), true, true);
+                // Append it to the select
+                $('#CountryId').append(newOption).trigger('change');
+            }
+            //$('#CountryId').val($('#HiddenCountryId').val()).trigger('change');
+            //alert($('#HiddenCountryId').val());
+            alert($('#HiddenCountryName').val());
+        }
+        else {
+            $('#CountryId').val(null).trigger('change');
+        }
+
+
+
+
+
+    })
+
+
+    //Add Data
+    $(document).on('click', '.add', function () {
+    
+        var Id = $('#CompanyId').val();
+        var CompanyName = $('#ConpanyName').val();
+        var CityId = $('#CityId').val();
+        var CountryId = $('#CountryId').val();
+        var company = {
+            'CompanyId': Id,
+            'CompanyName': CompanyName,
+            'CityId': CityId,
+            'CountryId': CountryId
+        }
+        $.ajax({
+            type: "POST",
+            url: "/Company/AddUpdateCompany/",
+            data: { 'company': company },
+            dataType: 'json',
+            success: function (response) {
+                if (response.status) {
+                    oTable.ajax.reload(null, false);
+                }
+                else {
+                    alert(response.message);
+                }
+            }
+        })
+    })
+
+
+    function LoadDiv(id) {
+        $.ajax({
+            type: "GET",
+            url: "/Company/AddUpdateCompany/" + id,
+            success: function (response) {
+                $('.addEditDiv').html(response);
+            }
+        })
+    }
+
+    $(document).on("click", '.select2-selection__clear', function () {
+        $(this).parents("div").find('select').val(null).trigger("change");
+    })
+
+
+
+</script>

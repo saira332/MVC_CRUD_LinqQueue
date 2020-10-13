@@ -3,68 +3,84 @@
 @{
     ViewBag.Title = "Home";
 }
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 <h2>Countries</h2>
 
 <div class="addEditDiv">
     @{Html.RenderAction("AddUpdateCountry", "Country", new { @id = 0 });}
 </div>
-<table class="table" id="myTable">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CountryId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CountryName)
-            </th>
-            <th>
-                Action
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
 
-            <tr>
-                <td class="id">@item.CountryId</td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CountryName)
-                </td>
-                <td>
-                    <button class="edit">Edit</button> |
-                    <button class="deleteBtn">Delete</button>
-                </td>
-            </tr>
 
-        }
-    </tbody>
-</table>
-<div class="deleteDiv">
+<div class="abc">
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped tblShadow" id="myTable" width="100%" cellspacing="0">
+            <thead style="background-color: #007acc; color: white; ">
+                <tr>
+                
+                    <th>Country Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
-@*<script src="~/Scripts/jquery-3.4.1.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
-
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>*@
 
 
-
-
+</div>
 
 
 
 <script>
     $(document).ready(function () {
-        $('#myTable').DataTable();
-    })
+        //$('#myTable').DataTable();
+        var breakpointDefinition = {
+            desktop: 1366,
+            tablet: 1024,
+            phone: 480
+        };
+
+        $('#myTable').dataTable({
+            "sDom": '<"top">rt<"bottom"lp i><"clear">',
+            "autoWidth": true,
+            "bLengthChange": false,
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "/Country/GetAllCountries",
+                "type": "POST",
+                "datatype": "json",
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    if (xhr.status === 410) {
+                        window.location.href = customErrorMessage;
+                    }
+                }
+            },
+            "columns": [
+               
+                { "data": "CountryName", "name": "CountryName", "autoWidth": true },
+                {
+                    "data": "CountryId", "width": "50px", "class": "Acenter", "orderable": false, "render": function (data) {
+                        var edit = '<a title="Edit" class="edit" href="javascript:void(0)"  data-value="' + data + '"><i class="fa fa-fw fa-edit txt-color-blue"></i></a>&nbsp';
+                        var del = '<a title="Delete" href="javascript:void(0)" class="deleteBtn" data-value="' + data + '" ><i class="fa fa-fw fa-times-circle txt-color-red"></i></a>';
+                        var final = edit + del;
+                        return final;
+                    }
+                }
+            ]
+        });
+        oTable = $('#myTable').DataTable();
+
+    });
+
+
     //Task2
     function getAllData() {
         var id = $(".id").text();
         return id;
     }
     $(document).on('click', '.edit', function () {
-        var id = $(this).closest("tr").find('.id').text();
+        var id = $(this).attr("data-value");
         LoadDiv(id);
     })
     function LoadDiv(id) {
@@ -78,7 +94,7 @@
     }
     //Delete
     $(document).on('click', '.deleteBtn', function () {
-        var id = $(this).closest("tr").find('.id').text();
+        var id = $(this).attr("data-value");
         Delete(id);
     })
     function Delete(id) {

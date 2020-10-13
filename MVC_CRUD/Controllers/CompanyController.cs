@@ -4,25 +4,28 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Web;
 using System.Web.Mvc;
 using System.Linq.Dynamic;
 
 namespace MVC_CRUD.Controllers
 {
-    public class CountryController : Controller
+    public class CompanyController : Controller
     {
         TestDbEntities db;
-        public CountryController()
+        public CompanyController()
         {
             db = new TestDbEntities();
         }
-        // GET: Country
+
+        // GET: Company
+        [HttpGet]
         public ActionResult Index()
         {
             return View();
         }
-        public ActionResult GetAllCountries()
+        public ActionResult GetAllCompanies()
         {
             //if (User != null)
             //{
@@ -59,59 +62,70 @@ namespace MVC_CRUD.Controllers
             //{
             //    whereCondition = " LOWER(s.HallName) like ('%%')";
             //}
-            List<clsCountry> listsub = new List<clsCountry>();
-            DataTableReader dtr = clsSqlCountry.getCountryListCount();
+            List<clsCompany> listsub = new List<clsCompany>();
+            DataTableReader dtr = clsSqlCompany.getCompanyListCount();
             while (dtr.Read())
             {
                 recordsTotal = Convert.ToInt32(dtr["MyRowCount"]);
             }
-            DataTableReader dt = clsSqlCountry.getCountryList(start, length, sorting);
+            DataTableReader dt = clsSqlCompany.getCompanyList(start, length, sorting);
             //     int i = 0;
             while (dt.Read())
             {
-                listsub.Add(new clsCountry()
+                listsub.Add(new clsCompany()
                 {
+                    CompanyId = Convert.ToInt32(dt["CompanyId"]),
+                    CompanyName = dt["CompanyName"].ToString(),
+                    CityId = Convert.ToInt32(dt["CityId"]),
+                    CityName = dt["CityName"].ToString(),
                     CountryId = Convert.ToInt32(dt["CountryId"]),
                     CountryName = dt["CountryName"].ToString()
 
                 });
             }
-          
+
             var data = listsub.ToList();
-        
+
 
             return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data },
                 JsonRequestBehavior.AllowGet);
         }
-
         [HttpGet]
-        public ActionResult AddUpdateCountry(int id = 0)
+        public ActionResult AddUpdateCompany(int id = 0)
         {
-            clsCountry country = new clsCountry();
+            clsCompany city = new clsCompany();
             if (id > 0)
             {
-                country = (from c in db.tblCountries
-                        where c.CountryId == id
-                        select new clsCountry
+                city = (from c in db.tblCompanies
+                        where c.CompanyId == id
+                        select new clsCompany
                         {
+                            CompanyId = c.CompanyId,
+                            CompanyName = c.CompanyName,
+                            CityId = c.CityId,
+                            CityName = db.tblCities.Where(x => x.CityId == c.CountryId).Select(x => x.CityName).FirstOrDefault(),
                             CountryId = c.CountryId,
-                            CountryName = c.CountryName
+                            CountryName = db.tblCountries.Where(x => x.CountryId == c.CountryId).Select(x => x.CountryName).FirstOrDefault()
                         }).FirstOrDefault();
 
             }
             else
             {
-                country = new clsCountry
+                city = new clsCompany
                 {
+                    CompanyId =0,
+                    CompanyName ="",
+                    CityId = 0,
+                    CityName = "",
                     CountryId = 0,
                     CountryName = ""
                 };
-            }      
+            }
 
-            return PartialView(country);
+            return PartialView(city);
         }
         [HttpPost]
-        public ActionResult AddUpdateCountry(clsCountry country)
+        public ActionResult AddUpdateCompany(clsCompany company)
         {
             string message = "";
             bool status = false;
@@ -119,7 +133,7 @@ namespace MVC_CRUD.Controllers
             {
                 string returnId = "0";
                 string insertUpdateStatus = "";
-                if (country.CountryId > 0)
+                if (company.CompanyId > 0)
                 {
                     insertUpdateStatus = "Update";
 
@@ -129,7 +143,7 @@ namespace MVC_CRUD.Controllers
                     insertUpdateStatus = "Save";
 
                 }
-                returnId = InsertUpdateCountryDb(country, insertUpdateStatus);
+                returnId = InsertUpdateCompanyDb(company, insertUpdateStatus);
                 if (returnId == "Success")
                 {
                     status = true;
@@ -148,9 +162,10 @@ namespace MVC_CRUD.Controllers
             }
 
             return new JsonResult { Data = new { status = status, message = message } };
+
         }
 
-        private string InsertUpdateCountryDb(clsCountry st, string insertUpdateStatus)
+        private string InsertUpdateCompanyDb(clsCompany st, string insertUpdateStatus)
         {
             string returnId = "0";
             string connection = System.Configuration.ConfigurationManager.ConnectionStrings["ADO"].ConnectionString;
@@ -159,12 +174,14 @@ namespace MVC_CRUD.Controllers
                 try
                 {
                     con.Open();
-                    using (SqlCommand cmd = new SqlCommand("spInsertUpdateCountry", con))
+                    using (SqlCommand cmd = new SqlCommand("spInsertUpdateCompany", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Clear();
+                        cmd.Parameters.Add("@CompanyId", SqlDbType.Int).Value = st.CompanyId;
+                        cmd.Parameters.Add("@CompanyName", SqlDbType.NVarChar).Value = st.CityName;
+                        cmd.Parameters.Add("@CityId", SqlDbType.Int).Value = st.CityId;
                         cmd.Parameters.Add("@CountryId", SqlDbType.Int).Value = st.CountryId;
-                        cmd.Parameters.Add("@CountryName", SqlDbType.NVarChar).Value = st.CountryName;
                         cmd.Parameters.Add("@InsertUpdateStatus", SqlDbType.NVarChar).Value = insertUpdateStatus;
                         cmd.Parameters.Add("@CheckReturn", SqlDbType.NVarChar, 300).Direction = ParameterDirection.Output;
                         cmd.ExecuteNonQuery();
@@ -182,14 +199,14 @@ namespace MVC_CRUD.Controllers
             return returnId;
         }
         [HttpPost]
-        public ActionResult DeleteCountry(int id)
+        public ActionResult DeleteCompany(int id)
         {
             string message = "";
             bool status = false;
 
-            clsCountry st = new clsCountry();
-            st.CountryId = id;
-            string returnId = InsertUpdateCountryDb(st, "Delete");
+            clsCompany st = new clsCompany();
+            st.CompanyId = id;
+            string returnId = InsertUpdateCompanyDb(st, "Delete");
             if (returnId == "Success")
             {
                 ModelState.Clear();
@@ -203,6 +220,8 @@ namespace MVC_CRUD.Controllers
                 message = returnId;
             }
             return new JsonResult { Data = new { status = status, message = message } };
+          
         }
+
     }
 }
