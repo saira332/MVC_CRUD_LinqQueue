@@ -1,0 +1,156 @@
+﻿@model IEnumerable<MVC_CRUD.Models.clsPurchase>
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<div class="addEditDiv">
+    @{Html.RenderAction("AddUpdatePurchase", "Purchase", new { @id = 0 });}
+</div>
+
+
+
+
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<div class="abc">
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped tblShadow" id="myTable" width="100%" cellspacing="0">
+            <thead style="background-color: #007acc; color: white; ">
+                <tr>
+                    <th>Purchase Date</th>
+                    <th>Refrence Number</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<script>
+    $(document).ready(function () {
+
+        var breakpointDefinition = {
+            desktop: 1366,
+            tablet: 1024,
+            phone: 480
+        };
+
+        $('#myTable').dataTable({
+            "sDom": '<"top">rt<"bottom"lp i><"clear">',
+            "autoWidth": true,
+            "bLengthChange": false,
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "/Purchase/GetAllPurchases",
+                "type": "POST",
+                "datatype": "json",
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    if (xhr.status === 410) {
+                        window.location.href = customErrorMessage;
+                    }
+                }
+            },
+            "columns": [
+                {
+                    "data": "PurchaseDate", "name": "PurchaseDate", "orderable": true, "autoWidth": true, 'render': function (date) {
+                        return getDateTimeForDatatable(date);
+                    }
+                },
+                { "data": "ReferenceNumber", "name": "ReferenceNumber", "autoWidth": true },
+                {
+                    "data": "PurchaseId", "width": "50px", "class": "Acenter", "orderable": false, "render": function (data) {
+                        var edit = '<a title="Edit" class="edit" href="javascript:void(0)"  data-value="' + data + '"><i class="fa fa-fw fa-edit txt-color-blue"></i></a>&nbsp';
+                        var del = '<a title="Delete" href="javascript:void(0)" class="deleteBtn" data-value="' + data + '" ><i class="fa fa-fw fa-times-circle txt-color-red"></i></a>';
+                        var final = edit + del;
+                        return final;
+                    }
+                }
+            ]
+        });
+        oTable = $('#myTable').DataTable();
+
+    });
+
+
+    //Task2
+    function getAllData() {
+        var id = $(".id").text();
+        return id;
+    }
+    $(document).on('click', '.edit', function () {
+        var id = $(this).attr("data-value");
+        
+        LoadDiv(id);
+    })
+    function LoadDiv(id) {
+        $.ajax({
+            type: "GET",
+            url: "/Purchase/AddUpdatePurchase/" + id,
+            success: function (response) {
+                $('.addEditDiv').html(response);
+            }
+        })
+    }
+    //Delete
+    $(document).on('click', '.deleteBtn', function () {
+
+        var id = $(this).attr("data-value");
+        Delete(id);
+    })
+    function Delete(id) {
+        var checkstr = confirm('Are you sure you want to delete');
+        if (checkstr == true) {
+            $.ajax({
+                url: "/Purchase/DeletePurchase/" + id,
+                type: "POST",
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status) {
+                        oTable.ajax.reload(null, false);
+                    }
+                    else {
+                        alert(response.message);
+                    }
+                }
+            })
+        }
+        else {
+            return false;
+        }
+    }
+
+    function getDateTimeForDatatable(date) {
+        if (date == null) {
+            return '';
+        }
+        else {
+            var newdate = new Date(parseInt(date.substr(6)));
+            var day = newdate.getDate();
+            var month = newdate.getMonth() + 1;
+            if (parseFloat(day) < 10) {
+                day = "0" + day;
+            }
+            if (parseFloat(month) < 10) {
+                month = "0" + month;
+            }
+            var year = newdate.getFullYear();
+
+            var hours = newdate.getHours();
+            var minutes = newdate.getMinutes();
+            var ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            var today = day + '-' + month + '-' + year + '&nbsp;&nbsp;&nbsp;' + strTime;
+            return today;
+        }
+    }
+</script>

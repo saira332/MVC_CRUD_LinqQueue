@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Linq.Dynamic;
+using Newtonsoft.Json;
 
 namespace MVC_CRUD.Controllers
 {
@@ -22,7 +23,7 @@ namespace MVC_CRUD.Controllers
         {
             return View();
         }
-        public ActionResult GetAllCountries()
+        public ActionResult GetAllPurchases()
         {
             //if (User != null)
             //{
@@ -49,7 +50,7 @@ namespace MVC_CRUD.Controllers
             }
             else
             {
-                sorting = " Order by s.CountryId asc";
+                sorting = " Order by s.PurchaseId asc";
             }
             //if (!(string.IsNullOrEmpty(HallName)))
             //{
@@ -59,21 +60,21 @@ namespace MVC_CRUD.Controllers
             //{
             //    whereCondition = " LOWER(s.HallName) like ('%%')";
             //}
-            List<clsCountry> listsub = new List<clsCountry>();
-            DataTableReader dtr = clsSqlCountry.getCountryListCount();
+            List<clsPurchase> listsub = new List<clsPurchase>();
+            DataTableReader dtr = clsSqlPurchase.getPurchaseListCount();
             while (dtr.Read())
             {
                 recordsTotal = Convert.ToInt32(dtr["MyRowCount"]);
             }
-            DataTableReader dt = clsSqlCountry.getCountryList(start, length, sorting);
+            DataTableReader dt = clsSqlPurchase.getPurchaseList(start, length, sorting);
             //     int i = 0;
             while (dt.Read())
             {
-                listsub.Add(new clsCountry()
+                listsub.Add(new clsPurchase()
                 {
-                    CountryId = Convert.ToInt32(dt["CountryId"]),
-                    CountryName = dt["CountryName"].ToString()
-
+                    PurchaseId = Convert.ToInt32(dt["PurchaseId"]),
+                    PurchaseDate = Convert.ToDateTime(dt["PurchaseDate"]),
+                    ReferenceNumber = Convert.ToInt32(dt["ReferenceNumber"])
                 });
             }
 
@@ -83,43 +84,86 @@ namespace MVC_CRUD.Controllers
             return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data },
                 JsonRequestBehavior.AllowGet);
         }
-
-        [HttpGet]
-        public ActionResult AddUpdateCountry(int id = 0)
+        public ActionResult getLineDetail(int id)
         {
-            clsCountry country = new clsCountry();
+            List<clsPurchase> detail = new List<clsPurchase>();
+            detail = (from c in db.tblPurchaseLines
+                      where c.PurchaseId == id
+                      orderby c.PurchaseLineId
+                      select new clsPurchase
+                      {
+                          ItemName = c.ItemName,
+                          Qyt = c.Qyt,
+                          Rate = c.Rate
+                      }).ToList();
+            var data = detail.ToList();
+            return new JsonResult { Data = new { data = data } };
+        }
+        [HttpGet]
+        public ActionResult AddUpdatePurchase(int id = 0)
+        {
+            clsPurchase country = new clsPurchase();
             if (id > 0)
             {
-                country = (from c in db.tblCountries
-                           where c.CountryId == id
-                           select new clsCountry
+                country = (from c in db.tblPurchases
+                           where c.PurchaseId == id
+                           select new clsPurchase
                            {
-                               CountryId = c.CountryId,
-                               CountryName = c.CountryName
+                               PurchaseId = c.PurchaseId,
+                               PurchaseDate = c.PurchaseDate,
+                               ReferenceNumber=c.ReferenceNumber,
+                               ItemName = db.tblPurchaseLines.Where(x => x.PurchaseId == c.PurchaseId).Select(x => x.ItemName).FirstOrDefault(),
+                               Qyt = db.tblPurchaseLines.Where(x => x.PurchaseId == c.PurchaseId).Select(x => x.Qyt).FirstOrDefault(),
+                               Rate = db.tblPurchaseLines.Where(x => x.PurchaseId == c.PurchaseId).Select(x => x.Rate).FirstOrDefault()
                            }).FirstOrDefault();
 
             }
             else
             {
-                country = new clsCountry
+                country = new clsPurchase
                 {
-                    CountryId = 0,
-                    CountryName = ""
+                    PurchaseId = 0,
+                    PurchaseDate = System.DateTime.Now,
+                    ReferenceNumber=0
                 };
             }
 
             return PartialView(country);
         }
         [HttpPost]
-        public ActionResult AddUpdateCountry(clsCountry country)
+        public ActionResult AddUpdatePurchase(clsPurchase purchase,string childData)
         {
             string message = "";
             bool status = false;
             try
             {
+                List<clsPurchase> PurchaseList = JsonConvert.DeserializeObject<List<clsPurchase>>(childData);
+
+
+
+                //data table for Branch Starts
+                DataTable dtPurchase = new DataTable();
+                dtPurchase.Columns.Add("Id");
+                dtPurchase.Columns.Add("ItemName");
+                dtPurchase.Columns.Add("Qyt");
+                dtPurchase.Columns.Add("Rate");
+
+
+
+                if (PurchaseList.Count != 0)
+                {
+                    for (int i = 0; i < PurchaseList.Count; i++)
+                    {
+                        dtPurchase.Rows.Add(new object[] { i + 1, PurchaseList[i].ItemName, PurchaseList[i].Qyt, PurchaseList[i].Rate });
+                    }
+                }
+                else
+                {
+                    dtPurchase.Rows.Add(new object[] { 0,"",0,0});
+                }
                 string returnId = "0";
                 string insertUpdateStatus = "";
-                if (country.CountryId > 0)
+                if (purchase.PurchaseId > 0)
                 {
                     insertUpdateStatus = "Update";
 
@@ -129,7 +173,7 @@ namespace MVC_CRUD.Controllers
                     insertUpdateStatus = "Save";
 
                 }
-                returnId = InsertUpdateCountryDb(country, insertUpdateStatus);
+                returnId = InsertUpdatePurchaseDb(purchase, dtPurchase,insertUpdateStatus);
                 if (returnId == "Success")
                 {
                     status = true;
@@ -150,7 +194,7 @@ namespace MVC_CRUD.Controllers
             return new JsonResult { Data = new { status = status, message = message } };
         }
 
-        private string InsertUpdateCountryDb(clsCountry st, string insertUpdateStatus)
+        private string InsertUpdatePurchaseDb(clsPurchase st, DataTable dt,string insertUpdateStatus)
         {
             string returnId = "0";
             string connection = System.Configuration.ConfigurationManager.ConnectionStrings["ADO"].ConnectionString;
@@ -159,12 +203,14 @@ namespace MVC_CRUD.Controllers
                 try
                 {
                     con.Open();
-                    using (SqlCommand cmd = new SqlCommand("spInsertUpdateCountry", con))
+                    using (SqlCommand cmd = new SqlCommand("spInsertUpdatePurchase", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Clear();
-                        cmd.Parameters.Add("@CountryId", SqlDbType.Int).Value = st.CountryId;
-                        cmd.Parameters.Add("@CountryName", SqlDbType.NVarChar).Value = st.CountryName;
+                        cmd.Parameters.Add("@PurchaseId", SqlDbType.Int).Value = st.PurchaseId;
+                        cmd.Parameters.Add("@PurchaseDate", SqlDbType.DateTime).Value = st.PurchaseDate;
+                        cmd.Parameters.Add("@ReferenceNumber", SqlDbType.Int).Value = st.ReferenceNumber;
+                        cmd.Parameters.Add("@dtPurchaseLine", SqlDbType.Structured).Value = dt;
                         cmd.Parameters.Add("@InsertUpdateStatus", SqlDbType.NVarChar).Value = insertUpdateStatus;
                         cmd.Parameters.Add("@CheckReturn", SqlDbType.NVarChar, 300).Direction = ParameterDirection.Output;
                         cmd.ExecuteNonQuery();
@@ -182,19 +228,29 @@ namespace MVC_CRUD.Controllers
             return returnId;
         }
         [HttpPost]
-        public ActionResult DeleteCountry(int id)
+        public ActionResult DeletePurchase(int id)
         {
             string message = "";
             bool status = false;
 
-            clsCountry st = new clsCountry();
-            st.CountryId = id;
-            string returnId = InsertUpdateCountryDb(st, "Delete");
+            DataTable dtPurchase = new DataTable();
+            dtPurchase.Columns.Add("Id");
+            dtPurchase.Columns.Add("ItemName");
+            dtPurchase.Columns.Add("Qyt");
+            dtPurchase.Columns.Add("Rate");
+
+
+
+                dtPurchase.Rows.Add(new object[] { 0, "", 0, 0 });
+
+            clsPurchase st = new clsPurchase();
+            st.PurchaseId = id;
+            string returnId = InsertUpdatePurchaseDb(st, dtPurchase, "Delete");
             if (returnId == "Success")
             {
                 ModelState.Clear();
                 status = true;
-                message = "User Type Successfully Deleted";
+                message = "Successfully Deleted";
             }
             else
             {

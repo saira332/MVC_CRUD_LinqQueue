@@ -52,7 +52,7 @@ namespace MVC_CRUD.Controllers
             }
             else
             {
-                sorting = " Order by s.CountryId asc";
+                sorting = " Order by s.CompanyId asc";
             }
             //if (!(string.IsNullOrEmpty(HallName)))
             //{

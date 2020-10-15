@@ -8,6 +8,8 @@
         <EntityTypeShape EntityType="TestDbModel.tblCity" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="TestDbModel.tblCountry" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="TestDbModel.tblCompany" Width="1.5" PointX="4.875" PointY="0.75" />
+        <EntityTypeShape EntityType="TestDbModel.tblPurchase" Width="1.5" PointX="0.75" PointY="3.75" />
+        <EntityTypeShape EntityType="TestDbModel.tblPurchaseLine" Width="1.5" PointX="2.75" PointY="3.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

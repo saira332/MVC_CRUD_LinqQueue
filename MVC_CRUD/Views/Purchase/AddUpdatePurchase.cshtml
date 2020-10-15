@@ -1,0 +1,317 @@
+﻿@model MVC_CRUD.Models.clsPurchase
+
+
+
+
+    <div class="form-horizontal">
+        <hr />
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.PurchaseId  , new { })
+        <input type="hidden" id="HiddenTr"  value=""/>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.PurchaseDate, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(model => model.PurchaseDate, new { @type = "datetime-local", @Value = Model.PurchaseDate.HasValue ? Model.PurchaseDate.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ss") : "", @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.PurchaseDate, "", new { @class = "text-danger" })
+        </div>
+    </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ReferenceNumber, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ReferenceNumber, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ReferenceNumber, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @*--Line Entry form start--*@
+
+        @*<div id="LineEntry" hidden>*@
+            <center>
+                <h1 class="heading-1" style="margin-top: 20px;color: #212121;font-weight: bold;font-size: 17px"><span>Purchase Detail</span></h1>
+            </center>
+            @Html.HiddenFor(model => model.PurchaseLineId, new { })
+            <div class="form-group">
+                @Html.LabelFor(model => model.ItemName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ItemName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ItemName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Qyt, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Qyt, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Qyt, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Rate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Rate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Rate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="row" style="margin-top:15px;">
+                <section class="col col-md-12">
+                    <center>
+
+                        <a title="Add Detail" id="btnAddDetail" href="javascript:void(0)" class="addbtn btn btn-primary" style="width:100px; height:30px;color:white; margin-bottom:8px;line-height:10px;padding:8px;border-radius:5px;">
+                            <i class="fal fa-plus"></i> Add
+                        </a>
+                    </center>
+                </section>
+            </div>
+        @*</div>*@
+            @*--Line Entry form end--*@
+
+
+            @*--Line Entry Table Start--*@
+
+            <div class="row">
+                <div class="col col-md-12" style="margin-bottom:10px">
+                    <table id="detailTableBranch" class="display nowrap cell-border table table-bordered table-striped" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th data-class="" style="width: 10px; background-color: #212121; color: white; padding: 5px; text-align: center;border-right:none "></th>
+                                <th data-class="" style="width: 10px; background-color: #212121; color: white; padding: 5px; text-align: center; border-left: none; "></th>
+                                <th style="width: 230px; background-color: #212121; color: white; padding: 5px; text-align: left;">Item Name</th>
+                                <th style="width: 20px; background-color: #212121; color: white; padding: 5px; text-align: center;">Quantity</th>
+                                <th style="width: 230px; background-color: #212121; color: white; padding: 5px; text-align: left;">Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="Tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+            @*--Line Entry Table End--*@
+
+
+
+
+
+
+
+
+
+
+            <div class="form-group">
+                <center>
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Save" class="btn btn-default add" />
+                    </div>
+                </center>
+            </div>
+        </div>
+        
+        <script type="text/javascript">
+            $(document).ready(function () {
+                if ($('#PurchaseId').val() > 0) {
+                    getLineDetail($('#PurchaseId').val());
+                }
+                else {
+
+                }
+            })
+            function getLineDetail(id) {
+                $.ajax({
+                    type: "POST",
+                    url: "/purchase/getLineDetail/" + id,
+                    dataType: 'json',
+                    success: function (response) {
+                        var tr = '';
+                        for (var key in response.data) {
+                                  tr += '<tr class="myRow">' +
+                                '<td class="editBtn"><i class="fa fa-fw fa-edit txt-color-blue"></i></td>' +
+                                '<td class="delBtn"><i class="fa fa-fw fa-times-circle txt-color-red"></i></td>' +
+                                      '<td class="ItemName">' + response.data[key].ItemName + '</td>' +
+                                      '<td class="Qty">' + response.data[key].Qyt + '</td>' +
+                                      '<td class="Rate">' + response.data[key].Rate + '</td>' +
+                                '</tr>';
+                            
+                        }
+                        $('#Tbody').append(tr);
+                    }
+                })
+            }
+            //$(document).ready(function () {
+
+            //    var aa = $('#ReferenceNumber').val();
+                
+            //    NumberPostive(aa);
+            //    GetTodayDate();
+
+            //    function GetTodayDate() {
+
+            //        var today = new Date();
+            //        var dd = today.getDate();
+            //        var mm = today.getMonth() + 1; //January is 0!
+            //        var yyyy = today.getFullYear();
+            //        if (dd < 10) {
+            //            dd = '0' + dd;
+            //        }
+            //        if (mm < 10) {
+            //            mm = '0' + mm;
+            //        }
+            //        var h = today.getHours();
+            //        var m = today.getMinutes();
+            //        if (h < 10) h = '0' + h;
+            //        if (m < 10) m = '0' + m;
+            //        var today = yyyy + '-' + mm + '-' + dd + 'T' + h + ':' + m;
+            //        $("#PurchaseDate").val(today);
+            //    }
+
+            //    function NumberPostive(evt, element) {
+            //        alert("number");
+            //        var charCode = (evt.which) ? evt.which : event.keyCode
+            //        if (
+            //            (charCode != 8) && (charCode != 127) && (charCode < 48 || charCode > 57))
+            //            evt.preventDefault();
+            //        return true;
+            //    }
+
+
+            //});
+
+
+
+               
+
+
+               
+          
+          
+            $(document).on('click', '#btnAddDetail', function () {
+                $('#btnAddDetail').text("Save");
+                var itemName = $('#ItemName').val();
+                var Qty = $('#Qyt').val();
+                var Rate = $('#Rate').val();
+                
+                var hiddenTrIndex = $('#HiddenTr').val();
+                if (hiddenTrIndex == "")
+                {
+                    var tr = '<tr class="myRow">' +
+                        '<td class="editBtn"><i class="fa fa-fw fa-edit txt-color-blue"></i></td>' +
+                        '<td class="delBtn"><i class="fa fa-fw fa-times-circle txt-color-red"></i></td>' +
+                        '<td class="ItemName">' + itemName + '</td>' +
+                        '<td class="Qty">' + Qty + '</td>' +
+                        '<td class="Rate">' + Rate + '</td>' +
+                        '</tr>';
+                    $('#Tbody').append(tr);
+                }
+                else {
+
+                    $('#detailTableBranch > tbody > tr:eq(' + hiddenTrIndex + ')').find('.ItemName').html(itemName);
+                    $('#detailTableBranch > tbody > tr:eq(' + hiddenTrIndex + ')').find('.Qty').html(Qty);
+                    $('#detailTableBranch > tbody > tr:eq(' + hiddenTrIndex + ')').find('.Rate').html(Rate);
+                }
+               
+                $('#ItemName').val("");
+                $('#Qyt').val("");
+                $('#Rate').val("");
+                $('#HiddenTr').val("");
+            })
+            $(document).on('click', '.editBtn', function () {
+                    $('#btnAddDetail').text("Edit");
+
+                var currentRow = $(this).closest('tr').index();
+                $('#HiddenTr').val(currentRow);
+
+                var item = $(this).closest('tr').find('.ItemName').text();
+                var qty = $(this).closest('tr').find('.Qty').text();
+                var rate = $(this).closest('tr').find('.Rate').text();
+
+                $('#ItemName').val(item);
+                $('#Qyt').val(qty);
+                $('#Rate').val(rate);
+
+            })
+
+           
+
+
+
+            $(document).on('click', '.delBtn', function () {
+                $(this).closest('tr').remove();
+
+            })
+           
+
+          
+
+        //Add Data
+            $(document).on('click', '.add', function () {
+
+
+                var Id = $('#PurchaseId').val();
+             
+            var Date = $('#PurchaseDate').val();
+            var ReferenceNumber = $('#ReferenceNumber').val();
+            var purchase = {
+                'PurchaseId': Id,
+                'PurchaseDate': Date,
+                'ReferenceNumber': ReferenceNumber
+            }
+
+                function getAllData() {
+                    var arrayData = [];
+
+                    //var countBranch = 0;
+                    $('.myRow').each(function () {
+                        var itemName = $(this).find('.ItemName').text();
+                        var qyt = $(this).find('.Qty').text();
+                        var rate = $(this).find('.Rate').text();
+                      
+
+                        var alldata = {
+                            'ItemName': itemName,
+                            'Qyt': qyt,
+                            'Rate': rate
+                        }
+                      
+                        arrayData.push(alldata);
+                    });
+
+                    return arrayData;
+                }
+
+            var childData = JSON.stringify(getAllData());
+            
+            $.ajax({
+                type: "POST",
+                url: "/Purchase/AddUpdatePurchase/",
+                data: { 'purchase': purchase, 'childData': childData },
+                dataType: 'json',
+                success: function (data) {
+                    $('#btn_Save').html("Save");
+                    if (data.status) {
+                        alert("Successfull.");
+                        location.reload();
+                    }
+                    else {
+                        alert(data.message);
+                    }
+                }
+            })
+        })
+
+
+        function LoadDiv(id) {
+            $.ajax({
+                type: "GET",
+                url: "/Purchase/AddUpdatePurchase/"+ id,
+                success: function (response) {
+                    $('.addEditDiv').html(response);
+                }
+            })
+        }
+
+   
+
+           
+        </script>

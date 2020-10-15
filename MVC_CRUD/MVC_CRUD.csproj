@@ -144,9 +144,11 @@
     <Compile Include="Models\clsCompany.cs" />
     <Compile Include="Models\clsCountry.cs" />
     <Compile Include="Models\clsList.cs" />
+    <Compile Include="Models\clsPurchase.cs" />
     <Compile Include="Models\clsSqlCity.cs" />
     <Compile Include="Models\clsSqlCompany.cs" />
     <Compile Include="Models\clsSqlCountry.cs" />
+    <Compile Include="Models\clsSqlPurchase.cs" />
     <Compile Include="Models\Model1.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -170,6 +172,12 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\tblCountry.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\tblPurchase.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\tblPurchaseLine.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -228,14 +236,15 @@
     <Content Include="Views\Home\AddUpdateCity.cshtml" />
     <Content Include="Views\Country\Index.cshtml" />
     <Content Include="Views\Country\AddUpdateCountry.cshtml" />
-    <Content Include="Views\Company\AddUpdateCountry.cshtml" />
     <Content Include="Views\Company\Index.cshtml" />
+    <Content Include="Views\Purchase\AddUpdatePurchase.cshtml" />
+    <Content Include="Views\Purchase\Index.cshtml" />
+    <Content Include="Views\Company\AddUpdateCompany.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Views\ComboList\" />
     <Folder Include="Views\Procedre\" />
-    <Folder Include="Views\Purchase\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
